@@ -89,12 +89,13 @@ func _My_token(session *sessions.Session) interface{} {
 }
 
 func _to_first_line(memos *Memos) []string {
-	result := make([]string, len(*memos))
-	for _, m := range *memos {
-		sl := strings.Split(m.Content, "\n")[0]
-		result = append(result, sl)
+	n := len(*memos)
+	result := make([]string, n)
 
+	for i := 0; i < n; i++ {
+		result[i] = strings.Split((*memos)[i].Content, "\n")[0]
 	}
+
 	return result
 }
 
