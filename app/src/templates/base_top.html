@@ -30,7 +30,7 @@ body {
 <li><a href="{{.url_for}}/mypage">MyPage</a></li>
 <li>
   <form action="/signout" method="post">
-    <input type="hidden" name="sid" value="{{ get_token .Session }}">
+    <input type="hidden" name="sid" value="{{ .my_token }}">
     <input type="submit" value="SignOut">
   </form>
 </li>
