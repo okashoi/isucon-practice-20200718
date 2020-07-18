@@ -3,7 +3,7 @@
 {{ template "base_top" .}}
 
 <form action="{{.Url_for}}/memo" method="post">
-  <input type="hidden" name="sid" value="{{ .my_token }}">
+  <input type="hidden" name="sid" value="{{ .My_token }}">
   <textarea name="content"></textarea>
   <br>
   <input type="checkbox" name="is_private" value="1"> private

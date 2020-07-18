@@ -76,7 +76,7 @@ type View struct {
 	Newer             *Memo
 	Session           *sessions.Session
 	Url_for           string
-	my_token          interface{}
+	My_token          interface{}
 	memos_first_lines []string
 }
 
@@ -84,7 +84,7 @@ func _Url_for() string {
 	return baseUrl.String()
 }
 
-func _my_token(session *sessions.Session) interface{} {
+func _My_token(session *sessions.Session) interface{} {
 	return session.Values["token"]
 }
 
@@ -283,7 +283,7 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 		User:              user,
 		Session:           session,
 		Url_for:           _Url_for(),
-		my_token:          _my_token(session),
+		My_token:          _My_token(session),
 		memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
@@ -349,7 +349,7 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 		User:              user,
 		Session:           session,
 		Url_for:           _Url_for(),
-		my_token:          _my_token(session),
+		My_token:          _My_token(session),
 		memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
@@ -374,7 +374,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		User:     user,
 		Session:  session,
 		Url_for:  _Url_for(),
-		my_token: _my_token(session),
+		My_token: _My_token(session),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
 		serverError(w, err)
@@ -428,7 +428,7 @@ func signinPostHandler(w http.ResponseWriter, r *http.Request) {
 	v := &View{
 		Session:  session,
 		Url_for:  _Url_for(),
-		my_token: _my_token(session),
+		My_token: _My_token(session),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
 		serverError(w, err)
@@ -484,7 +484,7 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		User:              user,
 		Session:           session,
 		Url_for:           _Url_for(),
-		my_token:          _my_token(session),
+		My_token:          _My_token(session),
 		memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
@@ -574,7 +574,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Newer:    newer,
 		Session:  session,
 		Url_for:  _Url_for(),
-		my_token: _my_token(session),
+		My_token: _My_token(session),
 	}
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)
