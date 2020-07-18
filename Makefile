@@ -22,3 +22,6 @@ restart:
 
 kataribe:
 	cat /var/log/nginx/access.log | kataribe
+
+torch:
+	TIMESTAMP=`date "+%Y%m%d%H%M%S"` && go-torch --url http://localhost:6060/debug/pprof/profile -p > /opt/isucon3-mod/app/src/public/torch-$TIMESTAMP.svg && ln -sf /opt/isucon3-mod/app/src/public/torch-$TIMESTAMP.svg /opt/isucon3-mod/app/src/public/torch.svg
