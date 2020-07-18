@@ -77,7 +77,7 @@ type View struct {
 	Session           *sessions.Session
 	Url_for           string
 	My_token          interface{}
-	memos_first_lines []string
+	Memos_first_lines []string
 }
 
 func _Url_for() string {
@@ -284,7 +284,7 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 		Session:           session,
 		Url_for:           _Url_for(),
 		My_token:          _My_token(session),
-		memos_first_lines: _to_first_line(&memos),
+		Memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -350,7 +350,7 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 		Session:           session,
 		Url_for:           _Url_for(),
 		My_token:          _My_token(session),
-		memos_first_lines: _to_first_line(&memos),
+		Memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -485,7 +485,7 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		Session:           session,
 		Url_for:           _Url_for(),
 		My_token:          _My_token(session),
-		memos_first_lines: _to_first_line(&memos),
+		Memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
 		serverError(w, err)
