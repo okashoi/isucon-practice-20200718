@@ -16,10 +16,9 @@ bench:
 
 SLOW_LOG=/var/lib/mysql/mysql-slow.log
 restart:
-	$(MAKE) -C app build && sudo supervisorctl restart isucon-app
+	sudo supervisorctl stop isucon-app && $(MAKE) -C app build && sudo supervisorctl start isucon-app
 	sudo bash -c "echo '' > /var/log/nginx/access.log && echo '' > /var/log/nginx/error.log" && sudo systemctl restart nginx.service
 	sudo bash -c "echo '' > $(SLOW_LOG)" && sudo systemctl restart mysqld.service
 
 kataribe:
 	cat /var/log/nginx/access.log | kataribe
-
