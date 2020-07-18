@@ -21,9 +21,6 @@ services:
           - "$PWD/app:/go/src/isucon"
         environment:
             GOPATH: "/go"
-        ports :
-          - 6060:6060
-        
 
     db:
         image: mysql:5.7
