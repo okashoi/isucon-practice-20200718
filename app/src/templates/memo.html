@@ -13,16 +13,16 @@ Memo by {{ .Memo.Username }} ({{ .Memo.CreatedAt }})
 
 <hr>
 {{ if .Older }}
-<a id="older" href="{{ url_for "/memo/" }}{{ .Older.Id }}">&lt; older memo</a>
+<a id="older" href="{{.Url_for}}/memo/{{ .Older.Id }}">&lt; older memo</a>
 {{ end }}
 |
 {{ if .Newer }}
-<a id="newer" href="{{ url_for "/memo/" }}{{ .Newer.Id }}">newer memo &gt;</a>
+<a id="newer" href="{{.Url_for}}/memo/{{ .Newer.Id }}">newer memo &gt;</a>
 {{ end }}
 
 <hr>
 <div id="content_html">
-{{ gen_markdown .Memo.Content }}
+{{ .Markdown }}
 </div>
 
 {{ template "base_bottom" . }}

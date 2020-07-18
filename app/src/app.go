@@ -65,45 +65,57 @@ type Memo struct {
 type Memos []*Memo
 
 type View struct {
-	User      *User
-	Memo      *Memo
-	Memos     *Memos
-	Page      int
-	PageStart int
-	PageEnd   int
-	Total     int
-	Older     *Memo
-	Newer     *Memo
-	Session   *sessions.Session
+	User              *User
+	Memo              *Memo
+	Memos             *Memos
+	Page              int
+	PageStart         int
+	PageEnd           int
+	Total             int
+	Older             *Memo
+	Newer             *Memo
+	Session           *sessions.Session
+	Url_for           string
+	My_token          interface{}
+	Memos_first_lines []string
+	Markdown          template.HTML
+}
+
+func _Url_for() string {
+	return baseUrl.String()
+}
+
+func _My_token(session *sessions.Session) interface{} {
+	return session.Values["token"]
+}
+
+func _to_first_line(memos *Memos) []string {
+	n := len(*memos)
+	result := make([]string, n)
+
+	for i := 0; i < n; i++ {
+		result[i] = strings.Split((*memos)[i].Content, "\n")[0]
+	}
+
+	return result
+}
+
+func _gen_markdown(s string) template.HTML {
+	// メモリに余裕があったので一気に読み込む
+	// https://cafe-and-cookies.tokyo/wp/?p=446
+	var r io.Reader
+	r = strings.NewReader(s)
+	buffer, _ := ioutil.ReadAll(r)
+
+	out := blackfriday.Run(buffer)
+
+	return template.HTML(out)
 }
 
 var (
 	dbConnPool chan *sql.DB
 	baseUrl    *url.URL
-	fmap       = template.FuncMap{
-		"url_for": func(path string) string {
-			return baseUrl.String() + path
-		},
-		"first_line": func(s string) string {
-			sl := strings.Split(s, "\n")
-			return sl[0]
-		},
-		"get_token": func(session *sessions.Session) interface{} {
-			return session.Values["token"]
-		},
-		"gen_markdown": func(s string) template.HTML {
-			// メモリに余裕があったので一気に読み込む
-			// https://cafe-and-cookies.tokyo/wp/?p=446
-			var r io.Reader
-			r = strings.NewReader(s)
-			buffer, _ := ioutil.ReadAll(r)
-
-			out := blackfriday.Run(buffer)
-
-			return template.HTML(out)
-		},
-	}
-	tmpl = template.Must(template.New("tmpl").Funcs(fmap).ParseGlob("templates/*.html"))
+	tmpl       *template.Template
 )
 
 func main() {
@@ -134,6 +146,8 @@ func main() {
 		dbConnPool <- conn
 		defer conn.Close()
 	}
+
+	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", topHandler)
@@ -264,13 +278,16 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 
 	v := &View{
-		Total:     totalCount,
-		Page:      0,
-		PageStart: 1,
-		PageEnd:   memosPerPage,
-		Memos:     &memos,
-		User:      user,
-		Session:   session,
+		Total:             totalCount,
+		Page:              0,
+		PageStart:         1,
+		PageEnd:           memosPerPage,
+		Memos:             &memos,
+		User:              user,
+		Session:           session,
+		Url_for:           _Url_for(),
+		My_token:          _My_token(session),
+		Memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -327,13 +344,16 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := &View{
-		Total:     totalCount,
-		Page:      page,
-		PageStart: memosPerPage*page + 1,
-		PageEnd:   memosPerPage * (page + 1),
-		Memos:     &memos,
-		User:      user,
-		Session:   session,
+		Total:             totalCount,
+		Page:              page,
+		PageStart:         memosPerPage*page + 1,
+		PageEnd:           memosPerPage * (page + 1),
+		Memos:             &memos,
+		User:              user,
+		Session:           session,
+		Url_for:           _Url_for(),
+		My_token:          _My_token(session),
+		Memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -354,8 +374,10 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUser(w, r, dbConn, session)
 
 	v := &View{
-		User:    user,
-		Session: session,
+		User:     user,
+		Session:  session,
+		Url_for:  _Url_for(),
+		My_token: _My_token(session),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
 		serverError(w, err)
@@ -407,7 +429,9 @@ func signinPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	v := &View{
-		Session: session,
+		Session:  session,
+		Url_for:  _Url_for(),
+		My_token: _My_token(session),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
 		serverError(w, err)
@@ -459,9 +483,12 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		memos = append(memos, &memo)
 	}
 	v := &View{
-		Memos:   &memos,
-		User:    user,
-		Session: session,
+		Memos:             &memos,
+		User:              user,
+		Session:           session,
+		Url_for:           _Url_for(),
+		My_token:          _My_token(session),
+		Memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
 		serverError(w, err)
@@ -544,11 +571,14 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := &View{
-		User:    user,
-		Memo:    memo,
-		Older:   older,
-		Newer:   newer,
-		Session: session,
+		User:     user,
+		Memo:     memo,
+		Older:    older,
+		Newer:    newer,
+		Session:  session,
+		Url_for:  _Url_for(),
+		My_token: _My_token(session),
+		Markdown: _gen_markdown(memo.Content),
 	}
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)
