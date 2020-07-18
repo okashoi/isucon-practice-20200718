@@ -13,9 +13,9 @@
 <h3>my memos</h3>
 
 <ul>
-{{ range .Memos }}
+{{ range  $i, $memo := .Memos }}
 <li>
-  <a href="{{.url_for}}/memo/{{ .Id }}">{{ first_line .Content }}</a> by {{ .Username }} ({{ .CreatedAt }})
+  <a href="{{.url_for}}/memo/{{ $memo.Id }}">{{ (index $.memos_first_lines $i) }}</a> by {{ $memo.Username }} ({{ $memo.CreatedAt }})
   {{ if .IsPrivate }}
   [private]
   {{ end }}

@@ -65,18 +65,19 @@ type Memo struct {
 type Memos []*Memo
 
 type View struct {
-	User      *User
-	Memo      *Memo
-	Memos     *Memos
-	Page      int
-	PageStart int
-	PageEnd   int
-	Total     int
-	Older     *Memo
-	Newer     *Memo
-	Session   *sessions.Session
-	url_for   string
-	my_token  interface{}
+	User              *User
+	Memo              *Memo
+	Memos             *Memos
+	Page              int
+	PageStart         int
+	PageEnd           int
+	Total             int
+	Older             *Memo
+	Newer             *Memo
+	Session           *sessions.Session
+	url_for           string
+	my_token          interface{}
+	memos_first_lines []string
 }
 
 func _url_for() string {
@@ -87,14 +88,20 @@ func _my_token(session *sessions.Session) interface{} {
 	return session.Values["token"]
 }
 
+func _to_first_line(memos *Memos) []string {
+	result := make([]string, len(*memos))
+	for _, m := range *memos {
+		sl := strings.Split(m.Content, "\n")[0]
+		result = append(result, sl)
+
+	}
+	return result
+}
+
 var (
 	dbConnPool chan *sql.DB
 	baseUrl    *url.URL
 	fmap       = template.FuncMap{
-		"first_line": func(s string) string {
-			sl := strings.Split(s, "\n")
-			return sl[0]
-		},
 		"gen_markdown": func(s string) template.HTML {
 			// メモリに余裕があったので一気に読み込む
 			// https://cafe-and-cookies.tokyo/wp/?p=446
@@ -268,15 +275,16 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 
 	v := &View{
-		Total:     totalCount,
-		Page:      0,
-		PageStart: 1,
-		PageEnd:   memosPerPage,
-		Memos:     &memos,
-		User:      user,
-		Session:   session,
-		url_for:   _url_for(),
-		my_token:  _my_token(session),
+		Total:             totalCount,
+		Page:              0,
+		PageStart:         1,
+		PageEnd:           memosPerPage,
+		Memos:             &memos,
+		User:              user,
+		Session:           session,
+		url_for:           _url_for(),
+		my_token:          _my_token(session),
+		memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -333,15 +341,16 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := &View{
-		Total:     totalCount,
-		Page:      page,
-		PageStart: memosPerPage*page + 1,
-		PageEnd:   memosPerPage * (page + 1),
-		Memos:     &memos,
-		User:      user,
-		Session:   session,
-		url_for:   _url_for(),
-		my_token:  _my_token(session),
+		Total:             totalCount,
+		Page:              page,
+		PageStart:         memosPerPage*page + 1,
+		PageEnd:           memosPerPage * (page + 1),
+		Memos:             &memos,
+		User:              user,
+		Session:           session,
+		url_for:           _url_for(),
+		my_token:          _my_token(session),
+		memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -471,11 +480,12 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		memos = append(memos, &memo)
 	}
 	v := &View{
-		Memos:    &memos,
-		User:     user,
-		Session:  session,
-		url_for:  _url_for(),
-		my_token: _my_token(session),
+		Memos:             &memos,
+		User:              user,
+		Session:           session,
+		url_for:           _url_for(),
+		my_token:          _my_token(session),
+		memos_first_lines: _to_first_line(&memos),
 	}
 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
 		serverError(w, err)

@@ -7,9 +7,9 @@
   recent {{ .PageStart }} - {{ .PageEnd }} / total <span id="total">{{ .Total }}</span>
 </p>
 <ul id="memos">
-{{ range .Memos }}
+{{ range  $i, $memo := .Memos }}
 <li>
-  <a href="{{.url_for}}/memo/"{{ .Id }}">{{ first_line .Content }}</a> by {{ .Username }} ({{ .CreatedAt }})
+  <a href="{{.url_for}}/memo/"{{ $memo.Id }}">{{ (index $.memos_first_lines $i) }}</a> by {{ $memo.Username }} ({{ $memo.CreatedAt }})
 </li>
 {{ end }}
 </ul>
