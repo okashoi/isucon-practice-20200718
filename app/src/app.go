@@ -15,7 +15,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-
+	_ "net/http/pprof"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
@@ -110,6 +110,10 @@ var (
 )
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	env := os.Getenv("ISUCON_ENV")
