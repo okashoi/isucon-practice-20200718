@@ -78,6 +78,7 @@ type View struct {
 	Url_for           string
 	My_token          interface{}
 	Memos_first_lines []string
+	Markdown          template.HTML
 }
 
 func _Url_for() string {
@@ -99,23 +100,22 @@ func _to_first_line(memos *Memos) []string {
 	return result
 }
 
+func _gen_markdown(s string) template.HTML {
+	// メモリに余裕があったので一気に読み込む
+	// https://cafe-and-cookies.tokyo/wp/?p=446
+	var r io.Reader
+	r = strings.NewReader(s)
+	buffer, _ := ioutil.ReadAll(r)
+
+	out := blackfriday.Run(buffer)
+
+	return template.HTML(out)
+}
+
 var (
 	dbConnPool chan *sql.DB
 	baseUrl    *url.URL
-	fmap       = template.FuncMap{
-		"gen_markdown": func(s string) template.HTML {
-			// メモリに余裕があったので一気に読み込む
-			// https://cafe-and-cookies.tokyo/wp/?p=446
-			var r io.Reader
-			r = strings.NewReader(s)
-			buffer, _ := ioutil.ReadAll(r)
-
-			out := blackfriday.Run(buffer)
-
-			return template.HTML(out)
-		},
-	}
-	tmpl = template.Must(template.New("tmpl").Funcs(fmap).ParseGlob("templates/*.html"))
+	tmpl       = template.Must(template.ParseGlob("templates/*.html"))
 )
 
 func main() {
@@ -576,6 +576,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Session:  session,
 		Url_for:  _Url_for(),
 		My_token: _My_token(session),
+		Markdown: _gen_markdown(memo.Content),
 	}
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)

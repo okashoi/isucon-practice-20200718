@@ -22,7 +22,7 @@ Memo by {{ .Memo.Username }} ({{ .Memo.CreatedAt }})
 
 <hr>
 <div id="content_html">
-{{ gen_markdown .Memo.Content }}
+{{ .Markdown }}
 </div>
 
 {{ template "base_bottom" . }}
