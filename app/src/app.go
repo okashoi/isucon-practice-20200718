@@ -1,14 +1,10 @@
 package main
 
 import (
-	"github.com/gorilla/sessions"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -20,16 +16,20 @@ import (
 	"strconv"
 	"strings"
 	_ "net/http/pprof"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 )
 
 const (
-	memosPerPage       = 100
-	listenAddr         = ":5000"
-	sessionName        = "isucon_session"
-	tmpDir             = "/tmp/"
-	markdownCommand    = "../bin/markdown"
-	dbConnPoolSize     = 10
-	sessionSecret      = "kH<{11qpic*gf0e21YK7YtwyUvE9l<1r>yX8R-Op"
+	memosPerPage    = 100
+	listenAddr      = ":5000"
+	sessionName     = "isucon_session"
+	tmpDir          = "/tmp/"
+	markdownCommand = "../bin/markdown"
+	dbConnPoolSize  = 10
+	sessionSecret   = "kH<{11qpic*gf0e21YK7YtwyUvE9l<1r>yX8R-Op"
 )
 
 type Config struct {
