@@ -9,4 +9,4 @@ run:
 	cd ./src && ./app
 
 fmt:
-	go fmt ./...
+	go fmt ./src && goreturns -w ./src
