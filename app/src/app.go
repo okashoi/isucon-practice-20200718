@@ -115,7 +115,7 @@ func _gen_markdown(s string) template.HTML {
 var (
 	dbConnPool chan *sql.DB
 	baseUrl    *url.URL
-	tmpl       = template.Must(template.ParseGlob("templates/*.html"))
+	tmpl       *template.Template
 )
 
 func main() {
@@ -146,6 +146,9 @@ func main() {
 		dbConnPool <- conn
 		defer conn.Close()
 	}
+
+	log.Printf("initialize templates")
+	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", topHandler)
