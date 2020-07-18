@@ -9,7 +9,7 @@ down:
 logs:
 	docker-compose logs -f
 
-bench: workload=1
+bench: workload=3
 bench: init=./init.sh
 bench:
 	sudo /opt/isucon3-mod/bench/bench benchmark --workload ${workload} --init ${init}
