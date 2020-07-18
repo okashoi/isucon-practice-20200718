@@ -147,7 +147,6 @@ func main() {
 		defer conn.Close()
 	}
 
-	log.Printf("initialize templates")
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
 	r := mux.NewRouter()
