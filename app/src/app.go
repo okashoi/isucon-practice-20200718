@@ -60,25 +60,25 @@ type Memo struct {
 	CreatedAt string
 	UpdatedAt string
 	Username  string
+	Summary   string
 }
 
 type Memos []*Memo
 
 type View struct {
-	User              *User
-	Memo              *Memo
-	Memos             *Memos
-	Page              int
-	PageStart         int
-	PageEnd           int
-	Total             int
-	Older             *Memo
-	Newer             *Memo
-	Session           *sessions.Session
-	Url_for           string
-	My_token          interface{}
-	Memos_first_lines []string
-	Markdown          template.HTML
+	User      *User
+	Memo      *Memo
+	Memos     *Memos
+	Page      int
+	PageStart int
+	PageEnd   int
+	Total     int
+	Older     *Memo
+	Newer     *Memo
+	Session   *sessions.Session
+	Url_for   string
+	My_token  interface{}
+	Markdown  template.HTML
 }
 
 func _Url_for() string {
@@ -87,17 +87,6 @@ func _Url_for() string {
 
 func _My_token(session *sessions.Session) interface{} {
 	return session.Values["token"]
-}
-
-func _to_first_line(memos *Memos) []string {
-	n := len(*memos)
-	result := make([]string, n)
-
-	for i := 0; i < n; i++ {
-		result[i] = strings.Split((*memos)[i].Content, "\n")[0]
-	}
-
-	return result
 }
 
 func _gen_markdown(s string) template.HTML {
@@ -110,6 +99,10 @@ func _gen_markdown(s string) template.HTML {
 	out := blackfriday.Run(buffer)
 
 	return template.HTML(out)
+}
+
+func getFirstLine(memo *Memo) string {
+	return strings.Split(memo.Content, "\n")[0]
 }
 
 var (
@@ -278,16 +271,15 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 
 	v := &View{
-		Total:             totalCount,
-		Page:              0,
-		PageStart:         1,
-		PageEnd:           memosPerPage,
-		Memos:             &memos,
-		User:              user,
-		Session:           session,
-		Url_for:           _Url_for(),
-		My_token:          _My_token(session),
-		Memos_first_lines: _to_first_line(&memos),
+		Total:     totalCount,
+		Page:      0,
+		PageStart: 1,
+		PageEnd:   memosPerPage,
+		Memos:     &memos,
+		User:      user,
+		Session:   session,
+		Url_for:   _Url_for(),
+		My_token:  _My_token(session),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -344,16 +336,15 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := &View{
-		Total:             totalCount,
-		Page:              page,
-		PageStart:         memosPerPage*page + 1,
-		PageEnd:           memosPerPage * (page + 1),
-		Memos:             &memos,
-		User:              user,
-		Session:           session,
-		Url_for:           _Url_for(),
-		My_token:          _My_token(session),
-		Memos_first_lines: _to_first_line(&memos),
+		Total:     totalCount,
+		Page:      page,
+		PageStart: memosPerPage*page + 1,
+		PageEnd:   memosPerPage * (page + 1),
+		Memos:     &memos,
+		User:      user,
+		Session:   session,
+		Url_for:   _Url_for(),
+		My_token:  _My_token(session),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -483,12 +474,11 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		memos = append(memos, &memo)
 	}
 	v := &View{
-		Memos:             &memos,
-		User:              user,
-		Session:           session,
-		Url_for:           _Url_for(),
-		My_token:          _My_token(session),
-		Memos_first_lines: _to_first_line(&memos),
+		Memos:    &memos,
+		User:     user,
+		Session:  session,
+		Url_for:  _Url_for(),
+		My_token: _My_token(session),
 	}
 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
 		serverError(w, err)
@@ -611,9 +601,14 @@ func memoPostHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		isPrivate = 0
 	}
+	tmpMemo := Memo{}
+	contentStr := r.FormValue("content")
+	tmpMemo.Content = contentStr
+	tmpMemo.Summary = getFirstLine(&tmpMemo)
+
 	result, err := dbConn.Exec(
-		"INSERT INTO memos (user, content, is_private, created_at) VALUES (?, ?, ?, now())",
-		user.Id, r.FormValue("content"), isPrivate,
+		"INSERT INTO memos (user, content, is_private, created_at, summary) VALUES (?, ?, ?, now(), ?)",
+		user.Id, r.FormValue("content"), isPrivate, tmpMemo.Summary,
 	)
 	if err != nil {
 		serverError(w, err)
