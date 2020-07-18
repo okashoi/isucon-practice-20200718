@@ -2,7 +2,7 @@
 
 {{ template "base_top" .}}
 
-<form action="{{.url_for}}/memo" method="post">
+<form action="{{.Url_for}}/memo" method="post">
   <input type="hidden" name="sid" value="{{ .my_token }}">
   <textarea name="content"></textarea>
   <br>
@@ -15,7 +15,7 @@
 <ul>
 {{ range  $i, $memo := .Memos }}
 <li>
-  <a href="{{.url_for}}/memo/{{ $memo.Id }}">{{ (index $.memos_first_lines $i) }}</a> by {{ $memo.Username }} ({{ $memo.CreatedAt }})
+  <a href="{{.Url_for}}/memo/{{ $memo.Id }}">{{ (index $.memos_first_lines $i) }}</a> by {{ $memo.Username }} ({{ $memo.CreatedAt }})
   {{ if .IsPrivate }}
   [private]
   {{ end }}

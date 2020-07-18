@@ -75,12 +75,12 @@ type View struct {
 	Older             *Memo
 	Newer             *Memo
 	Session           *sessions.Session
-	url_for           string
+	Url_for           string
 	my_token          interface{}
 	memos_first_lines []string
 }
 
-func _url_for() string {
+func _Url_for() string {
 	return baseUrl.String()
 }
 
@@ -282,7 +282,7 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 		Memos:             &memos,
 		User:              user,
 		Session:           session,
-		url_for:           _url_for(),
+		Url_for:           _Url_for(),
 		my_token:          _my_token(session),
 		memos_first_lines: _to_first_line(&memos),
 	}
@@ -348,7 +348,7 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 		Memos:             &memos,
 		User:              user,
 		Session:           session,
-		url_for:           _url_for(),
+		Url_for:           _Url_for(),
 		my_token:          _my_token(session),
 		memos_first_lines: _to_first_line(&memos),
 	}
@@ -373,7 +373,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	v := &View{
 		User:     user,
 		Session:  session,
-		url_for:  _url_for(),
+		Url_for:  _Url_for(),
 		my_token: _my_token(session),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
@@ -427,7 +427,7 @@ func signinPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	v := &View{
 		Session:  session,
-		url_for:  _url_for(),
+		Url_for:  _Url_for(),
 		my_token: _my_token(session),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
@@ -483,7 +483,7 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		Memos:             &memos,
 		User:              user,
 		Session:           session,
-		url_for:           _url_for(),
+		Url_for:           _Url_for(),
 		my_token:          _my_token(session),
 		memos_first_lines: _to_first_line(&memos),
 	}
@@ -573,7 +573,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Older:    older,
 		Newer:    newer,
 		Session:  session,
-		url_for:  _url_for(),
+		Url_for:  _Url_for(),
 		my_token: _my_token(session),
 	}
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
