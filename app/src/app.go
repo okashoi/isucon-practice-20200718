@@ -75,15 +75,17 @@ type View struct {
 	Older     *Memo
 	Newer     *Memo
 	Session   *sessions.Session
+	url_for   string
+}
+
+func _url_for() string {
+	return baseUrl.String()
 }
 
 var (
 	dbConnPool chan *sql.DB
 	baseUrl    *url.URL
 	fmap       = template.FuncMap{
-		"url_for": func(path string) string {
-			return baseUrl.String() + path
-		},
 		"first_line": func(s string) string {
 			sl := strings.Split(s, "\n")
 			return sl[0]
@@ -271,6 +273,7 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 		Memos:     &memos,
 		User:      user,
 		Session:   session,
+		url_for:   _url_for(),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -334,6 +337,7 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 		Memos:     &memos,
 		User:      user,
 		Session:   session,
+		url_for:   _url_for(),
 	}
 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
 		serverError(w, err)
@@ -356,6 +360,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	v := &View{
 		User:    user,
 		Session: session,
+		url_for: _url_for(),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
 		serverError(w, err)
@@ -408,6 +413,7 @@ func signinPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	v := &View{
 		Session: session,
+		url_for: _url_for(),
 	}
 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
 		serverError(w, err)
@@ -462,6 +468,7 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		Memos:   &memos,
 		User:    user,
 		Session: session,
+		url_for: _url_for(),
 	}
 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
 		serverError(w, err)
@@ -549,6 +556,7 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 		Older:   older,
 		Newer:   newer,
 		Session: session,
+		url_for: _url_for(),
 	}
 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
 		serverError(w, err)
